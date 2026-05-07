@@ -163,7 +163,7 @@ def calculate_iqms(
 
     mean_val = statistics.fmean(values)
     std_val = statistics.pstdev(values) if len(values) > 1 else 0.0
-    snr = (mean_val / std_val) if std_val > 0 else 0.0
+    snr = (mean_val / std_val) if std_val > 0 else float("inf")
 
     # Histogram-based entropy using fixed-size bins.
     min_val, max_val = min(values), max(values)
@@ -217,9 +217,10 @@ def _two_sided_permutation_p_value(
 
     exceed_count = 0
     for _ in range(permutations):
-        rng.shuffle(joined)
-        perm_a = joined[:a_size]
-        perm_b = joined[a_size:]
+        permuted = list(joined)
+        rng.shuffle(permuted)
+        perm_a = permuted[:a_size]
+        perm_b = permuted[a_size:]
         if abs(statistics.fmean(perm_a) - statistics.fmean(perm_b)) >= observed:
             exceed_count += 1
 
