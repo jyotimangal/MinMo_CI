@@ -81,8 +81,8 @@ def run_synthseg(input_nifti: str | Path, output_segmentation: str | Path, synth
         subprocess.run(command, check=True, capture_output=True, text=True)
     except FileNotFoundError as exc:
         raise RuntimeError(
-            f"SynthSeg binary '{synthseg_bin}' was not found. "
-            "Install FreeSurfer/SynthSeg and ensure the binary is on PATH."
+            f"SynthSeg executable '{synthseg_bin}' was not found. "
+            "Install FreeSurfer/SynthSeg and ensure the command-line tool is on PATH."
         ) from exc
     except subprocess.CalledProcessError as exc:
         raise RuntimeError(
@@ -199,6 +199,15 @@ def _two_sided_permutation_p_value(
 
     A fixed default seed keeps outputs reproducible for CI/tests while still
     allowing callers to override the seed when needed.
+
+    Parameters
+    ----------
+    group_a, group_b:
+        Metric values from each blinded cohort.
+    permutations:
+        Number of random label permutations.
+    random_seed:
+        Seed for deterministic permutation sampling.
     """
 
     observed = abs(statistics.fmean(group_a) - statistics.fmean(group_b))

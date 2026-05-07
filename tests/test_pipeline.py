@@ -1,4 +1,5 @@
 import csv
+import os
 import tempfile
 import unittest
 
@@ -78,14 +79,18 @@ class BlindedGroupComparisonTests(unittest.TestCase):
 
 class CsvLoadingTests(unittest.TestCase):
     def test_load_iqm_records_from_csv(self):
-        with tempfile.NamedTemporaryFile("w+", newline="", encoding="utf-8") as handle:
+        with tempfile.NamedTemporaryFile("w+", newline="", encoding="utf-8", delete=False) as handle:
             writer = csv.DictWriter(handle, fieldnames=["subject", "group", "normalized_gradient_squared"])
             writer.writeheader()
             writer.writerow({"subject": "S1", "group": "A", "normalized_gradient_squared": "0.21"})
             writer.writerow({"subject": "S2", "group": "B", "normalized_gradient_squared": "0.35"})
             handle.flush()
+            temp_path = handle.name
 
-            rows = load_iqm_records_from_csv(handle.name)
+        try:
+            rows = load_iqm_records_from_csv(temp_path)
+        finally:
+            os.unlink(temp_path)
 
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0]["subject"], "S1")
