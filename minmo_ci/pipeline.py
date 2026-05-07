@@ -10,6 +10,10 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
+ENTROPY_BIN_COUNT = 32
+DEFAULT_PERMUTATIONS = 10_000
+DEFAULT_RANDOM_SEED = 42
+
 
 def _optional_import(module_name: str) -> Any:
     try:
@@ -161,17 +165,17 @@ def calculate_iqms(
     std_val = statistics.pstdev(values) if len(values) > 1 else 0.0
     snr = (mean_val / std_val) if std_val > 0 else 0.0
 
-    # Histogram-based entropy using 32 bins.
+    # Histogram-based entropy using fixed-size bins.
     min_val, max_val = min(values), max(values)
     if min_val == max_val:
         entropy = 0.0
     else:
-        bins = [0] * 32
-        width = (max_val - min_val) / 32
+        bins = [0] * ENTROPY_BIN_COUNT
+        width = (max_val - min_val) / ENTROPY_BIN_COUNT
         for value in values:
             index = int((value - min_val) / width)
-            if index == 32:
-                index = 31
+            if index == ENTROPY_BIN_COUNT:
+                index = ENTROPY_BIN_COUNT - 1
             bins[index] += 1
         total = float(len(values))
         entropy = -sum((count / total) * math.log2(count / total) for count in bins if count)
@@ -188,8 +192,8 @@ def calculate_iqms(
 def _two_sided_permutation_p_value(
     group_a: List[float],
     group_b: List[float],
-    permutations: int = 10_000,
-    random_seed: int = 42,
+    permutations: int = DEFAULT_PERMUTATIONS,
+    random_seed: int = DEFAULT_RANDOM_SEED,
 ) -> float:
     """Return two-sided permutation-test p-value for mean differences.
 
@@ -217,7 +221,7 @@ def compare_blinded_groups(
     records: Sequence[Dict[str, Any]],
     metric_name: str = "normalized_gradient_squared",
     group_name: str = "group",
-    random_seed: int = 42,
+    random_seed: int = DEFAULT_RANDOM_SEED,
 ) -> Dict[str, Any]:
     """Compare one IQM between two blinded groups using a permutation test."""
 
