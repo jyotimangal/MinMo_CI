@@ -44,11 +44,11 @@ def convert_dicom_to_nifti(dicom_dir: str | Path, output_nifti: str | Path) -> s
         raise ValueError(f"No DICOM files found in: {dicom_dir}")
 
     slices: List[Tuple[int, object]] = []
-    for file_path in dicom_files:
+    for fallback_index, file_path in enumerate(dicom_files, start=1):
         ds = pydicom.dcmread(str(file_path), force=True)
         if not hasattr(ds, "PixelData"):
             continue
-        instance_number = int(getattr(ds, "InstanceNumber", len(slices)))
+        instance_number = int(getattr(ds, "InstanceNumber", fallback_index))
         slices.append((instance_number, ds.pixel_array))
 
     if not slices:
