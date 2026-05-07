@@ -39,7 +39,7 @@ def convert_dicom_to_nifti(dicom_dir: str | Path, output_nifti: str | Path) -> s
     if not dicom_files:
         raise ValueError(f"No DICOM files found in: {dicom_dir}")
 
-    slices: List[Tuple[int, Any]] = []
+    slices: List[Tuple[int, object]] = []
     for file_path in dicom_files:
         ds = pydicom.dcmread(str(file_path), force=True)
         if not hasattr(ds, "PixelData"):
@@ -185,11 +185,22 @@ def calculate_iqms(
     }
 
 
-def _two_sided_permutation_p_value(group_a: List[float], group_b: List[float], permutations: int = 10_000) -> float:
+def _two_sided_permutation_p_value(
+    group_a: List[float],
+    group_b: List[float],
+    permutations: int = 10_000,
+    random_seed: int = 42,
+) -> float:
+    """Return two-sided permutation-test p-value for mean differences.
+
+    A fixed default seed keeps outputs reproducible for CI/tests while still
+    allowing callers to override the seed when needed.
+    """
+
     observed = abs(statistics.fmean(group_a) - statistics.fmean(group_b))
     joined = group_a + group_b
     a_size = len(group_a)
-    rng = random.Random(42)
+    rng = random.Random(random_seed)
 
     exceed_count = 0
     for _ in range(permutations):
@@ -206,6 +217,7 @@ def compare_blinded_groups(
     records: Sequence[Dict[str, Any]],
     metric_name: str = "normalized_gradient_squared",
     group_name: str = "group",
+    random_seed: int = 42,
 ) -> Dict[str, Any]:
     """Compare one IQM between two blinded groups using a permutation test."""
 
@@ -240,7 +252,7 @@ def compare_blinded_groups(
         "mean_group_a": mean_a,
         "mean_group_b": mean_b,
         "mean_difference": mean_a - mean_b,
-        "p_value": _two_sided_permutation_p_value(group_a, group_b),
+        "p_value": _two_sided_permutation_p_value(group_a, group_b, random_seed=random_seed),
     }
 
 
