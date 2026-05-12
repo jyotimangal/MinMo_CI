@@ -5,17 +5,17 @@ from pathlib import Path
 import pandas as pd
 
 netapp_dir = Path(r"W:/MinMo_CI/")
-
+TARGET_SEQUENCE_NAME =  "*tse2d1_17"
 # create an empty list to store metadata dictionaries
 metadata_list = []
 # walk recursively through the root directory for all folders and files
-for path in netapp_dir.rglob("*"):
+for path in (netapp_dir / "raw").rglob("*"):
     # check if the path is a file
     if path.is_file():
         try:
             ds = pydicom.dcmread(path, stop_before_pixels=True)
             # check if the DICOM file has a Modality field and if it is MR
-            if ds.get('Modality') == 'MR':
+            if ds.get('Modality') == 'MR' and ds.get('PulseSequenceName') == TARGET_SEQUENCE_NAME:
                 print(f"Read MR DICOM file: {path}")
                 metadata = {
                     'FilePath': str(path),
@@ -25,6 +25,7 @@ for path in netapp_dir.rglob("*"):
                     'SeriesDescription': ds.get('SeriesDescription', 'N/A'),
                     'ImageType': ds.get('ImageType', 'N/A'),
                     'PulseSequenceName': ds.get('PulseSequenceName', 'N/A'),
+                    'Orientation': 'axial' if 'ax' in str(path) else 'sagittal' if 'sag' in str(path) else 'coronal' if 'cor' in str(path) else 'unknown',
                     'SeriesNumber': ds.get('SeriesNumber', 'N/A'),
                     'SeriesInstanceUID': ds.get('SeriesInstanceUID', 'N/A'),
                     'StudyInstanceUID': ds.get('StudyInstanceUID', 'N/A'),
@@ -39,4 +40,4 @@ for path in netapp_dir.rglob("*"):
 # create a dataframe from the metadata list and save it to a CSV file
 print(f"Total MR DICOM files found: {len(metadata_list)}")
 df = pd.DataFrame(metadata_list)
-df.to_csv(netapp_dir/"derivatives"/"MinMo_001_to_005_DICOM_Metadata.csv", index=False)
+df.to_csv(netapp_dir / "derivatives" / "MinMo_DICOM_Metadata.csv", index=False)
