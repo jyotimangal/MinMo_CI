@@ -6,7 +6,7 @@ from pathlib import Path
 netapp_dir = Path(r"W:/MinMo_CI/")
 
 # walk recursively through the root directory for all folders and files
-for path in netapp_dir.rglob("*"):
+for path in (netapp_dir / "raw").rglob("*"):
     # check if the path is a file
     if path.is_file():
         # check if the file can be read as a DICOM file
