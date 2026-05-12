@@ -13,7 +13,7 @@ niftis_dir.mkdir(exist_ok=True)
 
 processed_folders = set()  # Keep track of processed folders to avoid redundant conversions
 # walk recursively through the root directory for all folders and files
-for path in netapp_dir.rglob("*"):
+for path in (netapp_dir / "raw").rglob("*"):
     # check if the path is a file
     if path.is_file():
         try:
@@ -26,7 +26,7 @@ for path in netapp_dir.rglob("*"):
                 if series_folder in processed_folders:
                     continue # skip conversion if this folder has already been processed
                 processed_folders.add(series_folder)
-                niftis_series_folder = niftis_dir / series_folder.relative_to(netapp_dir)
+                niftis_series_folder = niftis_dir / series_folder.relative_to(netapp_dir / "raw")
                 niftis_series_folder.mkdir(parents=True, exist_ok=True)
                 existing_niftis = list(niftis_series_folder.glob("*.nii.gz"))
                 if existing_niftis:
@@ -38,3 +38,4 @@ for path in netapp_dir.rglob("*"):
                 print(f"Converted DICOM file {path} to NIfTI format at {niftis_series_folder}")
         except Exception as e:
             print(f"Could not read file {path} as DICOM: {e}")
+print(f"Conversion complete. {len(processed_folders)} series converted.")
