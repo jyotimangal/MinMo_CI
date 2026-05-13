@@ -26,12 +26,16 @@ Different scripts perform different functions. Exploratory scripts:
 - `run_synthseg.sh` is a bash script that runs mri-synthseg on nifti files to save the resampled parcellation file if it doesn't exist in `synthseg\`
 - `extract_brain_mask.py` extracts whole brain mask from the parcellation files and saves in `brain_masks\`
 - `calculate_ngs.py` calculates the normalised gradient squared for the multi slice 2D images after masking the nifti images with the native space brain mask (saved `brain_masks\*brain_mask_native.nii.gz`). Scripts saves the key values such as mean ngs across slices, std ngs across slices etc. in csv file in `derivatives\`
-- `analyse_ngs.ipynb` is a jupyter notebook that does basic analyses (scatterplot, errorplot) from the data linking metadata fields with ngs results. To do so, it merges the metadata csv with ngs csv and saves the merged dataframe as a csv in `derivates\`.
+- `analyse_ngs.ipynb` is a jupyter notebook that does basic analyses (scatterplot, errorplot) from the data linking metadata fields with ngs results. To do so, it merges the metadata csv with ngs csv and saves the merged dataframe as a csv in `derivatives\`.
 
 ## Running the code
 Currently the code is simple and split up into different scripts. Use python for .py scripts and bash for run_synthseg.sh. 
+### Setup
+1. Clone the repository
+2. Create a virtual environment: `python -m venv .venv`
+3. Activate it: `.\.venv\Scripts\activate` (Windows) or `source .venv/bin/activate` (Mac/Linux)
+4. Install dependencies: `pip install -r requirements.txt`
+5. For SynthSeg, WSL with FreeSurfer is required (see FreeSurfer installation docs). Mount the data drive in WSL with `sudo mount -t drvfs W: /mnt/w` before running `run_synthseg.sh`
 
 Future updates may involve the usage of flags for optional parameters for mri_synthseg as well as TARGET_SEQUENCE_NAME, FileName, FilePath and/or other metadata fields. Watch this space.
 
-## Dependencies
-Python packages and versions have been listed in requirements file. The code is written from VSCode in Windows 10. For mri-synthseg, the version used was in wsl (Windows subsystem for Linux).
