@@ -31,7 +31,7 @@ Different scripts perform different functions. Exploratory scripts:
 ## Running the code
 Currently the code is simple and split up into different scripts. Use python for .py scripts and bash for run_synthseg.sh. 
 
-Future updates may involve the usage of flags for TARGET_SEQUENCE_NAME, FileName, FilePath and/or other metadata fields. Watch this space.
+Future updates may involve the usage of flags for optional parameters for mri_synthseg as well as TARGET_SEQUENCE_NAME, FileName, FilePath and/or other metadata fields. Watch this space.
 
 ## Dependencies
-Python packages and versions have been listed in requirements file. The code is written from VSCode in Windows 10. For mri-synthseg, the version used in wsl (Windows subsystem for Linux).
+Python packages and versions have been listed in requirements file. The code is written from VSCode in Windows 10. For mri-synthseg, the version used was in wsl (Windows subsystem for Linux).
