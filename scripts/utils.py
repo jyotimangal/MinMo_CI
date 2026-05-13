@@ -52,8 +52,11 @@ def calculate_ngs(image_data, brain_mask_data):
                 ngs_values.append(ngs_slice)
 
     mean_ngs = np.mean(ngs_values) if ngs_values else 0
+    median_ngs = np.median(ngs_values) if ngs_values else 0
     std_ngs = np.std(ngs_values) if ngs_values else 0
-    return mean_ngs, std_ngs
+    q25 = np.percentile(ngs_values, 25) if ngs_values else 0
+    q75 = np.percentile(ngs_values, 75) if ngs_values else 0
+    return mean_ngs, median_ngs, std_ngs, q25, q75
 
 
 
