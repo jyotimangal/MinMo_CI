@@ -1,6 +1,5 @@
 # script that loads the original image and brain mask, resamples it to the original image space,
 # and calculates the mean and standard deviation of the NGS values within the brain mask, saving the results to a csv file
-
 import nibabel as nib
 import numpy as np
 import pandas as pd
@@ -11,7 +10,7 @@ from scipy.ndimage import binary_erosion
 # define the root directory for the original nifti images and brain masks
 netapp_dir = Path(r"W:/MinMo_CI/")
 # define the output csv file for the NGS results
-output_csv = netapp_dir / "derivatives" / "MinMo_001_to_005_NGS_Results.csv"
+output_csv = netapp_dir / "derivatives" / f"MinMo_NGS_Results.csv"
 # create an empty list to store the results
 results_list = []
 # walk recursively through the folder synthseg in root directory for all folders and files
@@ -23,7 +22,7 @@ for path in (netapp_dir / "niftis").rglob("*"):
         image_data = image_img.get_fdata()
         brain_mask_dir = netapp_dir / "brain_masks" / path.parent.relative_to(netapp_dir / "niftis")
         brain_mask_file = brain_mask_dir / (path.name.replace(".nii.gz", "") + "_brain_mask_native.nii.gz")
-        if brain_mask_file.exists() and False:
+        if brain_mask_file.exists():
             brain_mask_img = nib.load(brain_mask_file)
             brain_mask_data = brain_mask_img.get_fdata()
         else:
@@ -35,24 +34,33 @@ for path in (netapp_dir / "niftis").rglob("*"):
                 resampled_brain_mask_img = nib.Nifti1Image(brain_mask_data, image_img.affine, image_img.header)
                 resampled_brain_mask_file = brain_mask_dir / (path.name.replace(".nii.gz", "") + "_brain_mask_native.nii.gz")
                 nib.save(resampled_brain_mask_img, resampled_brain_mask_file)
-                brain_mask_data_eroded = binary_erosion(brain_mask_data >0, iterations=3).astype(int) # erode the brain mask to avoid edge effects in NGS calculation
-                resampled_eroded_brain_mask_file = brain_mask_dir / (path.name.replace(".nii.gz", "") + "_brain_mask_eroded_native.nii.gz")
-                nib.save(nib.Nifti1Image(brain_mask_data_eroded, image_img.affine, image_img.header), resampled_eroded_brain_mask_file)
             else:
                 print(f"No brain mask found for image {path}, skipping NGS calculation.")
                 continue
         
+        brain_mask_data_eroded = binary_erosion(brain_mask_data >0, iterations=3).astype(int) # erode the brain mask to avoid edge effects in NGS calculation
+        resampled_eroded_brain_mask_file = brain_mask_dir / (path.name.replace(".nii.gz", "") + "_brain_mask_eroded_native.nii.gz")
+        if not resampled_eroded_brain_mask_file.exists():
+            nib.save(nib.Nifti1Image(brain_mask_data_eroded, image_img.affine, image_img.header), resampled_eroded_brain_mask_file)
+
         # calculate the NGS values within the brain mask
-        mean_ngs, std_ngs = calculate_ngs(image_data, brain_mask_data)
-        mean_ngs_eroded, std_ngs_eroded = calculate_ngs(image_data, brain_mask_data_eroded)
+        mean_ngs, median_ngs, std_ngs, q25_ngs, q75_ngs = calculate_ngs(image_data, brain_mask_data)
+        mean_ngs_eroded, median_ngs_eroded, std_ngs_eroded, q25_ngs_eroded, q75_ngs_eroded = calculate_ngs(image_data, brain_mask_data_eroded)
 
         # append to result list
         results_list.append({
             "FilePath": str(path),
+            "Orientation": "axial" if 'ax' in str(path) else "sagittal" if 'sag' in str(path) else "coronal" if 'cor' in str(path) else "unknown",
             "Mean_NGS": mean_ngs,
+            "Median_NGS": median_ngs, 
             "Std_NGS": std_ngs,
+            "Q25_NGS": q25_ngs,
+            "Q75_NGS": q75_ngs,
             "Mean_NGS_Eroded": mean_ngs_eroded,
+            "Median_NGS_Eroded": median_ngs_eroded,
             "Std_NGS_Eroded": std_ngs_eroded,
+            "Q25_NGS_Eroded": q25_ngs_eroded,
+            "Q75_NGS_Eroded": q75_ngs_eroded,
             "N_slices": image_data.shape[2],
             "Num_voxels_in_mask": np.sum(brain_mask_data > 0),
             "Num_voxels_in_mask_Eroded": np.sum(brain_mask_data_eroded > 0)
