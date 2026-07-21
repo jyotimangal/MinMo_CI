@@ -10,7 +10,7 @@ from scipy.ndimage import binary_erosion
 # define the root directory for the original nifti images and brain masks
 netapp_dir = Path(r"W:/MinMo_CI/")
 # define the output csv file for the NGS results
-output_csv = netapp_dir / "derivatives" / f"MinMo_NGS_Results.csv"
+output_csv = netapp_dir / "derivatives" / f"NGS_Results.csv"
 # create an empty list to store the results
 results_list = []
 # walk recursively through the folder synthseg in root directory for all folders and files
