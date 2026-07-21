@@ -8,5 +8,9 @@ find "$NIFTI_DIR" -name "*.nii.gz" | while read nifti_file; do
 	resampled_file="$SYNTHSEG_DIR/${relative_path%.nii.gz}_resampled.nii.gz"
 	output_dir=$(dirname "$output_file")
 	mkdir -p "$output_dir"
+	if [ -f "$output_file" ]; then
+    	echo "Skipping $nifti_file - already processed"
+    	continue
+	fi	
 	mri_synthseg --i "$nifti_file" --resample "$resampled_file" --o "$output_file" --robust --cpu --threads 4
 done
