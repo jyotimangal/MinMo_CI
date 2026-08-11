@@ -6,11 +6,12 @@ import pandas as pd
 from pathlib import Path
 from utils import calculate_ngs, resample_source_to_target
 from scipy.ndimage import binary_erosion
+import re
 
 # define the root directory for the original nifti images and brain masks
 netapp_dir = Path(r"W:/MinMo_CI/")
 # define the output csv file for the NGS results
-output_csv = netapp_dir / "derivatives" / f"NGS_Results.csv"
+output_csv = netapp_dir / "derivatives" / "NGS_results_all.csv"
 # create an empty list to store the results
 results_list = []
 # walk recursively through the folder synthseg in root directory for all folders and files
@@ -50,6 +51,7 @@ for path in (netapp_dir / "niftis").rglob("*"):
         # append to result list
         results_list.append({
             "FilePath": str(path),
+            'SubjectID':  next((p for p in Path(str(path)).parts if re.match(r'Min-?Mo-\d{3}$', p)), 'unknown'), # extract the subject ID from the path if it matches the pattern MinMo-XXX or Min-Mo-XXX, otherwise set to 'unknown'
             "Orientation": "axial" if 'ax' in str(path) else "sagittal" if 'sag' in str(path) else "coronal" if 'cor' in str(path) else "unknown",
             "Mean_NGS": mean_ngs,
             "Median_NGS": median_ngs, 

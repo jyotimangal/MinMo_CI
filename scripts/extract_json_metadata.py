@@ -7,19 +7,20 @@ import re
 netapp_dir = Path(r"W:/MinMo_CI/")
 # create an empty list to store metadata dictionaries
 TARGET_SEQUENCE_NAME =  "*tse2d1_17"
-#TARGET_SEQUENCE_NAME = None
+TARGET_SEQUENCE_NAME = None
 metadata_list = []
 # walk recursively through the root directory for all folders and files
 for path in (netapp_dir / "niftis").rglob("*.json"):
     # check if the path is a file
     if path.is_file():
         try:
-            with open(path, 'r') as f:
+            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
                 data = json.load(f)
                 print(f"Processing file: {path}")
                 # extract relevant metadata fields from the JSON data
                 metadata = {
-                        'SeriesHash': path.parent.name,
+                        'SeriesHash': path.parent.parent.name if path.parent.name == "DICOM" else path.parent.name,
+                        'SubjectID':  next((p for p in Path(str(path)).parts if re.match(r'Min-?Mo-\d{3}$', p)), 'unknown'), # extract the subject ID from the path if it matches the pattern MinMo-XXX or Min-Mo-XXX, otherwise set to 'unknown'
                         'MagneticFieldStrength': data.get('MagneticFieldStrength'),
                         'MRAcquisitionType': data.get('MRAcquisitionType'),
                         'PulseSequenceName': data.get('PulseSequenceName'),

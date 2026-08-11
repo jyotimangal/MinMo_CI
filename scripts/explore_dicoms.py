@@ -21,6 +21,8 @@ for path in (netapp_dir / "raw").rglob("*"):
                 print(f"SeriesDescription: {ds.get('SeriesDescription', 'N/A')}")
                 print(f"PulseSequenceName: {ds.get('PulseSequenceName', 'N/A')}")
                 print(f"SeriesNumber: {ds.get('SeriesNumber', 'N/A')}")
+                print(f"PatientAge: {ds.get('PatientAge', 'N/A')}")
+                print(f"PatientBirthDate: {ds.get('PatientBirthDate', 'N/A')}")
             # break after printing the first file to avoid overwhelming output, 
             # remove this break to continue exploring all files
             #break

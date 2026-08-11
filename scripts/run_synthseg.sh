@@ -12,5 +12,6 @@ find "$NIFTI_DIR" -name "*.nii.gz" | while read nifti_file; do
     	echo "Skipping $nifti_file - already processed"
     	continue
 	fi	
-	mri_synthseg --i "$nifti_file" --resample "$resampled_file" --o "$output_file" --robust --cpu --threads 4
+	echo "Processing: $nifti_file"
+	mri_synthseg --i "$nifti_file" --resample "$resampled_file" --o "$output_file" --robust --cpu --threads 1 && echo "Success: $nifti_file" || echo "$nifti_file" >> /mnt/w/MinMo_CI/derivatives/synthseg_failed.txt
 done

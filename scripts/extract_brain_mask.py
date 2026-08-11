@@ -21,6 +21,9 @@ for path in (netapp_dir / "synthseg").rglob("*"):
         brain_mask_folder = brain_masks_dir / path.parent.relative_to(netapp_dir / "synthseg")
         brain_mask_folder.mkdir(parents=True, exist_ok=True)
         brain_mask_file = brain_mask_folder / (path.name.replace("_synthseg.nii.gz", "") + "_brain_mask.nii.gz")
+        if brain_mask_file.exists():
+            print(f"Brain mask already exists, skipping: {brain_mask_file}")
+            continue
         nib.save(brain_mask_img, brain_mask_file)
         print(f"Brain mask saved to {brain_mask_file}")
     else:
