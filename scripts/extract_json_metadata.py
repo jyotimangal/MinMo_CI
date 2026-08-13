@@ -3,8 +3,14 @@ import json
 import pandas as pd
 from pathlib import Path
 import re
+import platform
+from pathlib import Path
 
-netapp_dir = Path(r"W:/MinMo_CI/")
+if platform.system() == 'Windows':
+    netapp_dir = Path(r"W:/MinMo_CI/")
+else:
+    netapp_dir = Path.home() / "Documents/Postdoc_epilepsy/MinMo_CI"
+    
 # create an empty list to store metadata dictionaries
 TARGET_SEQUENCE_NAME =  "*tse2d1_17"
 TARGET_SEQUENCE_NAME = None
@@ -22,6 +28,7 @@ for path in (netapp_dir / "niftis").rglob("*.json"):
                         'SeriesHash': path.parent.parent.name if path.parent.name == "DICOM" else path.parent.name,
                         'SubjectID':  next((p for p in Path(str(path)).parts if re.match(r'Min-?Mo-\d{3}$', p)), 'unknown'), # extract the subject ID from the path if it matches the pattern MinMo-XXX or Min-Mo-XXX, otherwise set to 'unknown'
                         'MagneticFieldStrength': data.get('MagneticFieldStrength'),
+                        'SeriesNumber': data.get('SeriesNumber'),
                         'MRAcquisitionType': data.get('MRAcquisitionType'),
                         'PulseSequenceName': data.get('PulseSequenceName'),
                         'SliceThickness': data.get('SliceThickness'),
