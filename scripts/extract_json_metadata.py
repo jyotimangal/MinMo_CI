@@ -10,7 +10,7 @@ if platform.system() == 'Windows':
     netapp_dir = Path(r"W:/MinMo_CI/")
 else:
     netapp_dir = Path.home() / "Documents/Postdoc_epilepsy/MinMo_CI"
-    
+ 
 # create an empty list to store metadata dictionaries
 TARGET_SEQUENCE_NAME =  "*tse2d1_17"
 TARGET_SEQUENCE_NAME = None
