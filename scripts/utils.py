@@ -58,6 +58,56 @@ def calculate_ngs(image_data, brain_mask_data):
     q75 = np.percentile(ngs_values, 75) if ngs_values else 0
     return mean_ngs, median_ngs, std_ngs, q25, q75
 
+'Function to filter a dataframe based on a dictionary of filters. The filters can be exact matches or conditions like ''contains'' or ''excludes''.'
+def apply_filters_to_df(df, filters):
+    result = df.copy()
+    for col, cond in filters.items():
+        if isinstance(cond, tuple):
+            op, val = cond
+            if op == 'contains':
+                result = result[result[col].str.contains(val, na=False)]
+            elif op == 'excludes':
+                result = result[~result[col].str.contains(val, na=False)]
+        else:
+            result = result[result[col] == cond]
+    return result
 
 
+def open_in_itksnap(image_paths):
+    import subprocess
+    import platform
     
+    netapp_dir = Path(r"W:/MinMo_CI/") if platform.system() == 'Windows' else Path.home() / "Documents/Postdoc_epilepsy/MinMo_CI"
+    itksnap_path = r"C:\Program Files\ITK-SNAP 4.2\bin\ITK-SNAP.exe" if platform.system() == 'Windows' else "/Applications/ITK-SNAP.app/Contents/bin/itksnap"
+    
+    workspace_path = str(netapp_dir / "derivatives" / "temp_workspace.itksnap")
+    
+    overlay_template = """    <folder key="Layer[{idx:03d}]" >
+      <entry key="AbsolutePath" value="{path}" />
+      <entry key="Role" value="OverlayRole" />
+      <folder key="LayerMetaData" >
+        <entry key="Alpha" value="0.5" />
+      </folder>
+    </folder>"""
+    
+    main_path = image_paths[0].replace('\\', '/')
+    overlays = "\n".join([overlay_template.format(idx=i+1, path=p.replace('\\', '/')) 
+                          for i, p in enumerate(image_paths[1:])])
+    
+    xml = f"""<?xml version="1.0" encoding="UTF-8" ?>
+<registry>
+  <entry key="Version" value="20230320" />
+  <folder key="Layers" >
+    <folder key="Layer[000]" >
+      <entry key="AbsolutePath" value="{main_path}" />
+      <entry key="Role" value="MainRole" />
+    </folder>
+{overlays}
+  </folder>
+</registry>"""
+    
+    with open(workspace_path, 'w') as f:
+        f.write(xml)
+    
+    subprocess.Popen([itksnap_path, '-w', workspace_path])
+
