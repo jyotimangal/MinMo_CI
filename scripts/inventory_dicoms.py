@@ -4,8 +4,14 @@ import pydicom
 from pathlib import Path
 import pandas as pd
 import re
+import platform
 
-netapp_dir = Path(r"W:/MinMo_CI/")
+if platform.system() == "Windows":
+    netapp_dir = Path(r"W:/MinMo_CI/")
+else:
+    print("This script is designed to run on Windows as netapp01 directory can be accessed that way. Please adjust the netapp_dir path for your operating system.")
+    exit(1)
+
 TARGET_SEQUENCE_NAME =  "*tse2d1_17"
 TARGET_SEQUENCE_NAME = None
 # create an empty list to store metadata dictionaries
@@ -21,9 +27,10 @@ for path in (netapp_dir / "raw").rglob("*"):
                 print(f"Read MR DICOM file: {path}")
                 metadata = {
                     'FilePath': str(path),
-                    'PatientID': ds.get('PatientID', 'N/A'),
+                    'PatientID': re.sub(r'Min-Mo-', 'MinMo-', next((p for p in Path(str(path)).parts if re.match(r'Min-?Mo-\d{3}$', p)), 'unknown')),
                     'PatientName': ds.get('PatientName', 'N/A'),
-                    'SubjectID':  next((p for p in Path(str(path)).parts if re.match(r'Min-?Mo-\d{3}$', p)), 'unknown'), # extract the subject ID from the path if it matches the pattern MinMo-XXX or Min-Mo-XXX, otherwise set to 'unknown'
+                    'PatientBirthDate': ds.get('PatientBirthDate', 'N/A'), 
+                    'SubjectID': re.sub(r'Min-Mo-', 'MinMo-', next((p for p in Path(str(path)).parts if re.match(r'Min-?Mo-\d{3}$', p)), 'unknown')), # extract the subject ID from the path if it matches the pattern MinMo-XXX or Min-Mo-XXX, otherwise set to 'unknown'
                     'StudyDate': ds.get('StudyDate', 'N/A'),
                     'ImageType': ds.get('ImageType', 'N/A'),
                     'PulseSequenceName': ds.get('PulseSequenceName', 'N/A'),
@@ -37,6 +44,12 @@ for path in (netapp_dir / "raw").rglob("*"):
                     'InstanceCreationTime': ds.get('InstanceCreationTime', 'N/A'),
                     'InstanceNumber': ds.get('InstanceNumber', 'N/A')
                     }
+                for elem in ds:
+                    if elem.keyword and elem.keyword not in metadata:
+                        try:
+                            metadata[elem.keyword] = str(elem.value)
+                        except:
+                            metadata[elem.keyword] = 'N/A'
                 metadata_list.append(metadata)
         except Exception as e:
             print(f"Could not read file {path} as DICOM: {e}")
