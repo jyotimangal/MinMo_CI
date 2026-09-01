@@ -1,4 +1,6 @@
 # script with utility functions: calculate_ngs, resample_source_to_target
+from zipfile import Path
+
 import numpy as np
 import nibabel as nib
 from scipy.ndimage import affine_transform
@@ -76,7 +78,9 @@ def apply_filters_to_df(df, filters):
 def open_in_itksnap(image_paths):
     import subprocess
     import platform
-    
+    import time
+    from pathlib import Path
+    import os
     netapp_dir = Path(r"W:/MinMo_CI/") if platform.system() == 'Windows' else Path.home() / "Documents/Postdoc_epilepsy/MinMo_CI"
     itksnap_path = r"C:\Program Files\ITK-SNAP 4.2\bin\ITK-SNAP.exe" if platform.system() == 'Windows' else "/Applications/ITK-SNAP.app/Contents/bin/itksnap"
     
@@ -108,6 +112,9 @@ def open_in_itksnap(image_paths):
     
     with open(workspace_path, 'w') as f:
         f.write(xml)
-    
-    subprocess.Popen([itksnap_path, '-w', workspace_path])
+    # print(f"Workspace written to: {workspace_path}")
+    # print(f"Workspace exists: {Path(workspace_path).exists()}")
+    # print(f"ITK-SNAP path: {itksnap_path}")
+    subprocess.Popen([itksnap_path, '-w', workspace_path], shell=True)
+    time.sleep(2)  # Wait for ITK-SNAP to open the workspace
 
