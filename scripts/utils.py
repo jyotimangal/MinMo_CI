@@ -118,3 +118,35 @@ def open_in_itksnap(image_paths):
     subprocess.Popen([itksnap_path, '-w', workspace_path], shell=True)
     time.sleep(2)  # Wait for ITK-SNAP to open the workspace
 
+def get_orientation_from_iopField(iop):
+    if iop is None:
+        return 'unknown'
+    row = iop[:3]
+    col = iop[3:]
+    normal = [
+        row[1]*col[2] - row[2]*col[1],
+        row[2]*col[0] - row[0]*col[2],
+        row[0]*col[1] - row[1]*col[0]
+    ]
+    abs_normal = [abs(x) for x in normal]
+    max_idx = abs_normal.index(max(abs_normal))
+    return ['sagittal', 'coronal', 'axial'][max_idx]
+
+def load_json_dicom_merged(netapp_dir, merge_on=['SubjectID', 'SeriesNumber', 'PulseSequenceName'], how='left'):
+    import pandas as pd
+    
+    json_df = pd.read_csv(netapp_dir / "derivatives" / "JSON_metadata_inventory_all.csv")
+    dicom_df = pd.read_csv(netapp_dir / "derivatives" / "DICOM_inventory_all.csv")
+    
+    # keep only columns unique to dicom_df plus the merge keys
+    dicom_unique_cols = merge_on + [c for c in dicom_df.columns if c not in json_df.columns]
+    dicom_df = dicom_df[dicom_unique_cols]
+
+    merged_df = json_df.merge(dicom_df, on=merge_on, how=how)
+    
+    print(f"JSON: {len(json_df)} rows, DICOM: {len(dicom_df)} rows, Merged: {len(merged_df)} rows")
+    return merged_df
+
+def truncate_right(s, n=40):
+    s = str(s)
+    return '...' + s[-n:] if len(s) > n else s

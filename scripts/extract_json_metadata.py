@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 import re
 import platform
-from pathlib import Path
+from utils import get_orientation_from_iopField
 
 if platform.system() == 'Windows':
     netapp_dir = Path(r"W:/MinMo_CI/")
@@ -26,11 +26,14 @@ for path in (netapp_dir / "niftis").rglob("*.json"):
                 # extract relevant metadata fields from the JSON data
                 metadata = {
                         'SeriesHash': path.parent.parent.name if path.parent.name == "DICOM" else path.parent.name,
-                        'SubjectID':  next((p for p in Path(str(path)).parts if re.match(r'Min-?Mo-\d{3}$', p)), 'unknown'), # extract the subject ID from the path if it matches the pattern MinMo-XXX or Min-Mo-XXX, otherwise set to 'unknown'
-                        'MagneticFieldStrength': data.get('MagneticFieldStrength'),
+                        'SubjectID': re.sub(r'Min-Mo-', 'MinMo-', next((p for p in Path(str(path)).parts if re.match(r'Min-?Mo-\d{3}$', p)), 'unknown')),                        'MagneticFieldStrength': data.get('MagneticFieldStrength'),
                         'SeriesNumber': data.get('SeriesNumber'),
+                        'SeriesDescription': data.get('SeriesDescription'),
+                        'StudyDescription': data.get('StudyDescription'),
+                        'ProtocolName': data.get('ProtocolName'),
                         'MRAcquisitionType': data.get('MRAcquisitionType'),
                         'PulseSequenceName': data.get('PulseSequenceName'),
+                        'Orientation': get_orientation_from_iopField(data.get('ImageOrientationPatientDICOM')),
                         'SliceThickness': data.get('SliceThickness'),
                         'EchoTime': data.get('EchoTime'),
                         'RepetitionTime': data.get('RepetitionTime'),
