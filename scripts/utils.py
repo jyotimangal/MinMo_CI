@@ -138,10 +138,8 @@ def load_json_dicom_merged(netapp_dir, merge_on=['SubjectID', 'SeriesNumber', 'P
     json_df = pd.read_csv(netapp_dir / "derivatives" / "JSON_metadata_inventory_all.csv")
     dicom_df = pd.read_csv(netapp_dir / "derivatives" / "DICOM_inventory_all.csv")
     
-    # keep only columns unique to dicom_df plus the merge keys
-    dicom_unique_cols = merge_on + [c for c in dicom_df.columns if c not in json_df.columns]
-    dicom_df = dicom_df[dicom_unique_cols]
-
+    dicom_df = drop_common_columns(dicom_df, json_df, keep_cols=merge_on)
+    
     merged_df = json_df.merge(dicom_df, on=merge_on, how=how)
     
     print(f"JSON: {len(json_df)} rows, DICOM: {len(dicom_df)} rows, Merged: {len(merged_df)} rows")
@@ -150,3 +148,7 @@ def load_json_dicom_merged(netapp_dir, merge_on=['SubjectID', 'SeriesNumber', 'P
 def truncate_right(s, n=40):
     s = str(s)
     return '...' + s[-n:] if len(s) > n else s
+
+def drop_common_columns(df_target, df_reference, keep_cols=[]):
+    columns = [col for col in df_target.columns if col in df_reference.columns and col not in keep_cols]
+    return df_target.drop(columns=columns)

@@ -18,8 +18,10 @@ pd.set_option('display.width', 200)
 merged_df = utils.load_json_dicom_merged(netapp_dir, merge_on=['SubjectID', 'SeriesNumber', 'PulseSequenceName'], how='left')
 
 for (group1, group2), group_df in merged_df.groupby(['SubjectID','PulseSequenceName']):
-    #if len(group_df) == 1: # use this condition to skip groups with only one entry
-        #continue
+    # display those subjects that have repeat scans for the same pulse sequence 
+    # those are the one that have repeat reference in ProtocolName, and subjects 31, 33, 63 has ax_t2_tse, t1_space_sag and ax_t2_tse thave no repeat reference in protocolname
+    if not group_df['ProtocolName'].str.contains('RPT|repeat|rpt', case=False, na=False).any() and not (group1 in ['MinMo-031', 'MinMo-033', 'MinMo-063'] and group2 in ['ax_t2_tse', 't1_space_sag']):
+        continue
     print(newline := "\n" + "="*80 + "\n")
     print(f"SubjectID: {group1}, PulseSequenceName: {group2}, Number of repeats in PulseSequence per Subject: {len(group_df)}")
     group_df_sorted = group_df.sort_values('SeriesNumber')
