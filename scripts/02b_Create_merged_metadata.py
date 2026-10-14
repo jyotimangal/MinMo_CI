@@ -6,6 +6,7 @@
 #This is to have a homogenous localiser scan entry
 
 import pandas as pd
+from utils import drop_common_columns
 
 json_df = pd.read_csv(r"W:/MinMo_CI/derivatives/json_metadata_xnat.csv")
 dicom_df = pd.read_csv(r"W:/MinMo_CI/derivatives/dicom_metadata_xnat.csv")
@@ -23,12 +24,15 @@ json_filtered_df = json_df[~json_df.index.isin(coronal_multiples_idx)]
 
 print(f"Filtered JSON rows: {len(json_filtered_df)}")
 
+# build a df after filtering to distinct columns between the two dataframes, excluding the merge keys
+dicom_df_distinct_columns = drop_common_columns(dicom_df, json_filtered_df, keep_cols=['SubjectID', 'SeriesNumber', 'SeriesDescription'])
 
 #Merge the filtered JSON metadata with the DICOM metadata on SubjectID, SeriesNumber, and SeriesDescription
-merged_df = json_filtered_df.merge(dicom_df, on=['SubjectID', 'SeriesNumber', 'SeriesDescription'], how='left')
+merged_df = json_filtered_df.merge(dicom_df_distinct_columns, on=['SubjectID', 'SeriesNumber', 'SeriesDescription'], how='left')
 
 # Print the number of rows in the merged dataframe
 print(f"Merged rows: {len(merged_df)}")
+print(f"Merged columns: {len(merged_df.columns)} ({len(json_df.columns)} + {len(dicom_df_distinct_columns.columns)} - 3)") # 3 is for the merge keys
 
 # Save the merged dataframe to a CSV file
 merged_df.to_csv(r"W:/MinMo_CI/derivatives/all_metadata_xnat.csv", index=False)
