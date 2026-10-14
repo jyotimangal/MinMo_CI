@@ -152,3 +152,12 @@ def truncate_right(s, n=40):
 def drop_common_columns(df_target, df_reference, keep_cols=[]):
     columns = [col for col in df_target.columns if col in df_reference.columns and col not in keep_cols]
     return df_target.drop(columns=columns)
+
+def get_nested_field(ds, *tag_path):
+    try:
+        val = ds
+        for tag in tag_path:
+            val = val[tag][0]
+        return val.value
+    except:
+        return None
