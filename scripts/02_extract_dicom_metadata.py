@@ -14,7 +14,7 @@ else:
 metadata_list = []
 
 for path in sorted((netapp_dir / "raw_xnat").rglob("*")):
-    if path.is_file():
+    if path.is_file() and path.parent.name == "DICOM":
         try:
             ds = pydicom.dcmread(path, stop_before_pixels=True)
             print(f"Processing file: {path}")
