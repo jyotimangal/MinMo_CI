@@ -4,6 +4,7 @@ from zipfile import Path
 import numpy as np
 import nibabel as nib
 from scipy.ndimage import affine_transform
+from difflib import SequenceMatcher
 
 # Function to resample a source image to the target image space using affine transformation
 # order=0 for nearest neighbor interpolation suitable for binary masks as source, order=1 for linear interpolation suitable for continuous data as source
@@ -156,8 +157,11 @@ def drop_common_columns(df_target, df_reference, keep_cols=[]):
 def get_nested_field(ds, *tag_path):
     try:
         val = ds
-        for tag in tag_path:
+        for tag in tag_path[:-1]:
             val = val[tag][0]
-        return val.value
+        return val[tag_path[-1]].value
     except:
         return None
+
+def similarity(a, b):
+    return SequenceMatcher(None, a.lower(), b.lower()).ratio()

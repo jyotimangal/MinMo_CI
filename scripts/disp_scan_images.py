@@ -1,3 +1,6 @@
+# Author: Jyoti Mangal, Date 15/10/2026
+# Script to display the scans that have been identified as explicit repeat scans, and open them in ITK-SNAP for visual inspection.
+
 import importlib
 import utils
 importlib.reload(utils)
