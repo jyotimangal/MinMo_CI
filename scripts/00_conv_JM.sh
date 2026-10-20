@@ -2,10 +2,10 @@
 # Script to convert DICOMs to NIfTI for all subjects in the MinMo_CI/raw_xnat/ directory. Based on Renzo's Harvard Dataverse 00_conv.sh script
 
 #!/bin/bash
-# Run from /mnt/w/MinMo_CI/raw_xnat/ in wsl
+# Run from /mnt/w/MinMo_CI/raw_xnat/ in wsl using bash /mnt/c/Users/jm19/MinMo_CI/scripts/00_conv_JM.sh
 # Converts DICOMs to NIfTI for all subjects, output goes to <subject>/<session>/nii/
 
-for subject_dir in MinMo-052/*/; do
+for subject_dir in MinMo-*/; do
     subject_dir=${subject_dir%*/}
     
     for session_dir in $subject_dir/*/; do
