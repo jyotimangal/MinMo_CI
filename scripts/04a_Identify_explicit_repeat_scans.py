@@ -11,7 +11,10 @@ metadata_df = pd.read_csv(r"W:/MinMo_CI/derivatives/all_metadata_xnat.csv")
 # Explicit repeat scan identification
 SeriesDescriptionStrings = metadata_df['SeriesDescription'].str
 listOfUniqueSeriesDescriptions = SeriesDescriptionStrings.lower().unique()
-explicit_repeat_df = metadata_df[SeriesDescriptionStrings.contains('rpt|repeat', case=False, na=False)].sort_values(by=['SubjectID', 'SeriesNumber'])
+explicit_repeat_df = metadata_df[
+    SeriesDescriptionStrings.contains('rpt|repeat', case=False, na=False) &
+    ~metadata_df['ImageType'].str.contains('DERIVED', case=False, na=False)
+].sort_values(by=['SubjectID', 'SeriesNumber'])
 
 # load group_key.csv and merge with explicit_repeat_df on SubjectID to get the group information
 # group_key_df = pd.read_csv(r"W:/MinMo_CI/derivatives/group_key.csv")

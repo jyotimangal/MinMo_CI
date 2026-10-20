@@ -5,7 +5,7 @@
 # Run from /mnt/w/MinMo_CI/raw_xnat/ in wsl
 # Converts DICOMs to NIfTI for all subjects, output goes to <subject>/<session>/nii/
 
-for subject_dir in MinMo-*/; do
+for subject_dir in MinMo-052/*/; do
     subject_dir=${subject_dir%*/}
     
     for session_dir in $subject_dir/*/; do

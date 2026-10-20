@@ -165,3 +165,7 @@ def get_nested_field(ds, *tag_path):
 
 def similarity(a, b):
     return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+def get_nifti_path(df, subject_id, series_number):
+    row = df[(df['SubjectID'] == subject_id) & (df['SeriesNumber'] == series_number)]
+    return row['NIfTIPath'].values[0] if len(row) > 0 else None
